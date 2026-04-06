@@ -1,1 +1,37 @@
-
+name: sql-antigravity-env
+version: "0.1.0"
+description: >
+  A real-world OpenEnv environment where AI agents learn to review
+  SQL queries for syntax errors, performance anti-patterns, and
+  security vulnerabilities. 3 graded tasks from easy to hard.
+  Built for the Meta PyTorch OpenEnv Hackathon by Resq-Minds.
+author: Resq-Minds
+tags:
+  - openenv
+  - sql
+  - code-review
+  - security
+  - real-world
+tasks:
+  - id: task_easy
+    difficulty: easy
+    description: Detect misspelled SQL keywords (SELCT, FORM, WEHRE)
+  - id: task_medium
+    difficulty: medium
+    description: Identify SELECT * and missing WHERE clause on 50M row table
+  - id: task_hard
+    difficulty: hard
+    description: Detect SQL injection vulnerability via f-string interpolation
+reward_range: [0.0, 1.0]
+max_episode_steps: 9
+observation_space:
+  query: string
+  schema_context: string
+  task_description: string
+  task_id: string
+  step_num: integer
+  feedback: string (optional)
+action_space:
+  verdict: "approve | reject | needs_changes"
+  issues_found: list of strings
+  suggested_fix: string (optional)
