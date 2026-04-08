@@ -21,7 +21,7 @@ Built for the **Meta PyTorch x Hugging Face OpenEnv Hackathon** by team Resq-Min
 
 ---
 
-## What This Environment Simulates
+## Overview
 
 Every software team writes SQL queries that need to be reviewed before going to production. This environment trains an AI agent to act as a senior SQL reviewer — reading a query, identifying problems, and submitting a structured review verdict.
 
@@ -51,7 +51,7 @@ The agent receives:
 
 ---
 
-## Tasks
+## Tasks description
 
 | Task | Difficulty | Description |
 |------|-----------|-------------|
@@ -101,18 +101,21 @@ client = OpenAI(
 )
 ```
 
-## API Endpoints
+## API usage (/reset, /step)
 
+You can interact with the environment using REST APIs:
+- `POST /reset` — start new episode
+- `POST /step` — submit action
+
+Additional endpoints:
 - `GET /health` — health check
 - `GET /schema` — action and observation schemas
 - `GET /state` — current episode state
-- `POST /reset` — start new episode
-- `POST /step` — submit action
 - `WebSocket /ws` — persistent session interface
 
 ---
 
-## Setup
+## How to run locally
 
 ```bash
 git clone https://github.com/sakthimanoj0706/sql_simulator
