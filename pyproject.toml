@@ -5,7 +5,7 @@ build-backend = "setuptools.backends.legacy:build"
 [project]
 name = "sql-antigravity-env"
 version = "0.1.0"
-description = "SQL Query Review OpenEnv environment for the Meta PyTorch Hackathon"
+description = "SQL Query Review OpenEnv environment - real-world SQL code review for syntax, performance, and security issues"
 requires-python = ">=3.10"
 dependencies = [
     "openenv-core>=0.2.0",
@@ -19,5 +19,11 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest", "httpx"]
 
+[project.scripts]
+server = "app.server:app"
+
 [tool.setuptools.packages.find]
 where = ["."]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.yml", "*.txt", "*.md"]
