@@ -21,23 +21,23 @@ class SyntaxTask(Task):
         notes = []
         if verdict == "reject":
             score += 0.4
-            notes.append("correct verdict")
+            notes.append("[Verdict] Correct: 'reject'.")
         else:
-            notes.append(f"wrong verdict: got '{verdict}', expected 'reject'")
+            notes.append(f"[Verdict] Incorrect: Expected 'reject', but got '{verdict}'.")
         combined = " ".join(issues_found).lower()
-        hits = sum(1 for kw in ["syntax", "typo", "misspell", "selct", "form", "wehre", "error", "incorrect", "wrong"] if kw in combined)
+        hits = sum(1 for kw in ["syntax error", "typo", "misspelled keyword", "selct", "form", "wehre"] if kw in combined)
         if hits >= 2:
             score += 0.4
-            notes.append("identified syntax errors")
+            notes.append("[Analysis] Identified multiple syntax errors.")
         elif hits == 1:
             score += 0.2
-            notes.append("partially identified issues")
+            notes.append("[Analysis] Partially identified syntax issues.")
         else:
-            notes.append("missed syntax errors")
+            notes.append("[Analysis] Missed key syntax errors (e.g., misspelled keywords).")
         if suggested_fix and "SELECT" in suggested_fix.upper() and "FROM" in suggested_fix.upper():
             score += 0.2
-            notes.append("valid fix provided")
-        return min(score, 1.0), " | ".join(notes)
+            notes.append("[Fix] Valid corrected query provided.")
+        return min(score, 1.0), " ".join(notes)
 
 
 class PerformanceTask(Task):
@@ -46,26 +46,26 @@ class PerformanceTask(Task):
         notes = []
         if verdict in ("reject", "needs_changes"):
             score += 0.3
-            notes.append("correct verdict")
+            notes.append("[Verdict] Correct: Flagged for changes/rejection.")
         else:
-            notes.append(f"wrong verdict: got '{verdict}'")
+            notes.append(f"[Verdict] Incorrect: Expected 'needs_changes' or 'reject', but got '{verdict}'.")
         combined = " ".join(issues_found).lower()
-        if any(k in combined for k in ["select *", "wildcard", "all columns", "star"]):
+        if any(k in combined for k in ["select *", "wildcard", "all columns FETCH"]):
             score += 0.25
-            notes.append("caught SELECT *")
+            notes.append("[Analysis] Correctly flagged 'SELECT *' usage.")
         else:
-            notes.append("missed SELECT *")
-        if any(k in combined for k in ["where", "filter", "full scan", "full table", "no condition"]):
+            notes.append("[Analysis] Missed 'SELECT *' performance anti-pattern.")
+        if any(k in combined for k in ["missing where", "full table scan", "no execution filter", "no condition"]):
             score += 0.25
-            notes.append("caught missing WHERE")
+            notes.append("[Analysis] Correctly flagged missing WHERE clause.")
         else:
-            notes.append("missed missing WHERE")
+            notes.append("[Analysis] Missed missing WHERE clause (full scan risk).")
         if suggested_fix:
             fix_up = suggested_fix.upper()
             if "WHERE" in fix_up and "SELECT *" not in fix_up:
                 score += 0.2
-                notes.append("fix is correct")
-        return min(score, 1.0), " | ".join(notes)
+                notes.append("[Fix] Provided a performant query fix.")
+        return min(score, 1.0), " ".join(notes)
 
 
 class SecurityTask(Task):
@@ -74,26 +74,26 @@ class SecurityTask(Task):
         notes = []
         if verdict == "reject":
             score += 0.3
-            notes.append("correct verdict")
+            notes.append("[Verdict] Correct: Rejected due to security risk.")
         else:
-            notes.append(f"wrong verdict: got '{verdict}', expected 'reject'")
+            notes.append(f"[Verdict] Incorrect: Expected 'reject', but got '{verdict}'.")
         combined = " ".join(issues_found).lower()
-        inj_hits = sum(1 for k in ["injection", "unsanitized", "user input", "f-string", "concatenat", "format string", "string interpolat", "unescaped"] if k in combined)
+        inj_hits = sum(1 for k in ["sql injection", "unsanitized input", "f-string vulnerability", "string concatenation", "format string"] if k in combined)
         if inj_hits >= 2:
             score += 0.4
-            notes.append("identified SQL injection")
+            notes.append("[Analysis] Successfully identified SQL injection risk.")
         elif inj_hits == 1:
             score += 0.2
-            notes.append("partially identified injection risk")
+            notes.append("[Analysis] Partially identified unsanitized input risk.")
         else:
-            notes.append("missed SQL injection")
-        if any(k in combined for k in ["parameteriz", "prepared statement", "bind", "placeholder", "%s", "?"]):
+            notes.append("[Analysis] Missed critical SQL injection vulnerability.")
+        if any(k in combined for k in ["parameterized query", "prepared statement", "bind parameter"]):
             score += 0.15
-            notes.append("recommended parameterized queries")
-        if suggested_fix and any(k in suggested_fix for k in ["%s", "?", ":param"]):
+            notes.append("[Recommendation] Correctly suggested parameterized queries.")
+        if suggested_fix and any(k in suggested_fix for k in ["%s", "?", ":param", "execute("]):
             score += 0.15
-            notes.append("fix uses parameterization")
-        return min(score, 1.0), " | ".join(notes)
+            notes.append("[Fix] Provided a safe string parameterized fix.")
+        return min(score, 1.0), " ".join(notes)
 
 
 TASK_ORDER = ["task_easy", "task_medium", "task_hard"]

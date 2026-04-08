@@ -23,7 +23,17 @@ Built for the **Meta PyTorch x Hugging Face OpenEnv Hackathon** by team Resq-Min
 
 ## Overview
 
+### Problem Statement
 Every software team writes SQL queries that need to be reviewed before going to production. This environment trains an AI agent to act as a senior SQL reviewer — reading a query, identifying problems, and submitting a structured review verdict.
+
+### Real-world relevance
+Bad SQL queries can cause massive production outages or expose sensitive user data via SQL Injection. Simulating code review helps train an agent to prevent these issues before they reach production.
+
+### Architecture overview
+The environment is built on top of the `openenv-core` framework, running a FastAPI server to expose `/reset`, `/step`, and `/state` HTTP/WebSocket endpoints. Agents evaluate SQL queries via multi-turn conversations and return structured JSON actions.
+
+### Why this environment is useful for RL training
+Unlike traditional code generation tasks, this environment formulates code review as a sequential decision-making problem. It provides a densely shaped reward signal (penalizing redundant steps while rewarding correct issue identification) that makes it an excellent benchmark for reinforcement learning.
 
 ---
 
