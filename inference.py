@@ -39,7 +39,7 @@ FALLBACK_RESPONSES = {
         "issues_found": [
             "SELECT * fetches all columns causing unnecessary data transfer on 50M row table",
             "Missing WHERE clause causes full table scan on 50 million rows",
-            "No filter for today's pending orders as required by dashboard"
+            "No filter for pending orders as required by dashboard"
         ],
         "suggested_fix": "SELECT id, user_id, amount, status FROM orders WHERE status = 'pending' AND DATE(created_at) = CURDATE()"
     },
@@ -80,7 +80,7 @@ def call_llm(user_msg: str, task_id: str) -> dict:
     return FALLBACK_RESPONSES.get(task_id, {
         "verdict": "reject",
         "issues_found": ["Issue detected in SQL query"],
-        "suggested_fix": null
+        "suggested_fix": None
     })
 
 
@@ -104,9 +104,10 @@ def run_baseline():
         steps_taken = 0
 
         print(f"[START] task={task_id}", flush=True)
+        sys.stdout.flush()
 
         for step in range(3):
-            if obs.done or obs.task_id == "done" or obs.task_id != task_id:
+            if obs.done:
                 break
 
             user_msg = (
@@ -125,16 +126,17 @@ def run_baseline():
 
             obs = env.step(action)
             steps_taken = step + 1
-            step_reward = round(obs.reward or 0.0, 4)
+            step_reward = obs.reward or 0.0
+            step_reward = max(0.01, min(0.99, round(step_reward, 4)))
             total_reward += step_reward
 
             print(f"[STEP] step={steps_taken} reward={step_reward}", flush=True)
             sys.stdout.flush()
 
-            if obs.done or obs.task_id != task_id:
+            if obs.done:
                 break
 
-        final_score = round(total_reward, 4)
+        final_score = max(0.01, min(0.99, round(total_reward / max(steps_taken, 1), 4)))
         print(f"[END] task={task_id} score={final_score} steps={steps_taken}", flush=True)
         sys.stdout.flush()
 
