@@ -4,8 +4,8 @@ def compute_reward(
     max_steps: int,
     done: bool
 ) -> float:
-    reward = task_score * 0.68
-    reward -= step * 0.04
+    reward = task_score * 0.70
+    reward -= step * 0.03
     if done:
         efficiency = max(0.0, (max_steps - step) / max_steps)
         reward += efficiency * 0.18
