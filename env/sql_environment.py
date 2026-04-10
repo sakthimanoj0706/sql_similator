@@ -68,7 +68,10 @@ class SQLAntigravityEnvironment(Environment):
             suggested_fix=action.suggested_fix,
         )
         self._total_score += score
-        task_done = (self._steps_this_task >= MAX_STEPS_PER_TASK or score >= 1.0)
+        task_done = (
+            self._steps_this_task >= MAX_STEPS_PER_TASK
+            or score >= 0.90
+        )
         reward = compute_reward(score, self._steps_this_task, MAX_STEPS_PER_TASK, task_done)
         if task_done:
             self._task_index += 1

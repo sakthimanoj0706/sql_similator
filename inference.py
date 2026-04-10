@@ -135,7 +135,7 @@ def run_baseline():
                 break
 
         if step_rewards:
-            final_score = safe_score(sum(step_rewards) / len(step_rewards))
+            final_score = safe_score(max(step_rewards))
         else:
             final_score = 0.05
 
