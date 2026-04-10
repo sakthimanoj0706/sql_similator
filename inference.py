@@ -92,11 +92,11 @@ def run_baseline():
     print("\n=== SQL Antigravity Env Baseline Run ===\n", flush=True)
 
     task_results = {}
+    env = SQLAntigravityEnvironment()
+    obs = env.reset()
+    current_task_id = obs.task_id
 
     for task_id in TASK_ORDER:
-        env = SQLAntigravityEnvironment()
-        obs = env.reset()
-
         difficulty = TASKS[task_id].difficulty
         step_rewards = []
         steps_taken = 0
@@ -105,7 +105,10 @@ def run_baseline():
         sys.stdout.flush()
 
         for step in range(3):
-            if obs.done:
+            if obs.done or obs.task_id == "done":
+                break
+
+            if obs.task_id != task_id:
                 break
 
             user_msg = (
@@ -131,7 +134,7 @@ def run_baseline():
             print(f"[STEP] step={steps_taken} reward={clamped}", flush=True)
             sys.stdout.flush()
 
-            if obs.done:
+            if obs.done or obs.task_id != task_id:
                 break
 
         if step_rewards:
