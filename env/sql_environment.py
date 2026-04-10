@@ -35,7 +35,7 @@ class SQLAntigravityEnvironment(Environment):
             step_count=self._step_count,
             current_task_id=(TASK_ORDER[self._task_index] if not self._done else "done"),
             tasks_completed=self._task_index,
-            total_score=round(self._total_score, 4),
+            total_score=round(self._total_score / max(1, self._step_count), 4),
         )
 
     def reset(self, seed=None, episode_id=None, **kwargs):
