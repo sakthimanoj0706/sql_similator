@@ -156,9 +156,8 @@ def run_baseline():
     for tid in TASK_ORDER:
         r = task_results[tid]
         print(f"  {tid} ({r['difficulty']}): score={r['score']} steps={r['steps']}", flush=True)
-        grand_total += r["score"]
-    final_average = grand_total / len(TASK_ORDER) if TASK_ORDER else 0.0
-    print(f"  Total score: {round(final_average, 4)}", flush=True)
+        grand_total += float(r["score"])
+    print(f"  Total score: {round(grand_total, 4)}", flush=True)
     print("\n=== Baseline Complete ===", flush=True)
     sys.stdout.flush()
 
