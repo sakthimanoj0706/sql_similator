@@ -155,7 +155,65 @@ class SecurityTask(Task):
         return min(score, 0.97), " | ".join(notes)
 
 
-TASK_ORDER = ["task_easy", "task_medium", "task_hard"]
+class ExpertTask(Task):
+    def grade(self, verdict, issues_found, suggested_fix=None):
+        score = 0.0
+        notes = []
+
+        if verdict == "reject":
+            score += 0.30
+            notes.append("correct verdict")
+        elif verdict == "needs_changes":
+            score += 0.15
+            notes.append("acceptable verdict")
+        else:
+            notes.append("wrong verdict")
+
+        combined = " ".join(issues_found).lower()
+
+        inj_hits = sum(1 for k in [
+            "injection", "f-string", "f string", "interpolat",
+            "concatenat", "unsanitized", "user_id", "direct"
+        ] if k in combined)
+
+        perf_hits = sum(1 for k in [
+            "select *", "star", "wildcard", "all columns",
+            "index", "full scan", "50 million", "performance"
+        ] if k in combined)
+
+        param_hits = sum(1 for k in [
+            "parameteriz", "prepared", "placeholder", "%s", "sanitiz"
+        ] if k in combined)
+
+        if inj_hits >= 2:
+            score += 0.25
+            notes.append("identified injection")
+        elif inj_hits == 1:
+            score += 0.12
+            notes.append("partial injection")
+
+        if perf_hits >= 2:
+            score += 0.20
+            notes.append("identified performance issues")
+        elif perf_hits == 1:
+            score += 0.10
+            notes.append("partial performance")
+
+        if param_hits >= 1:
+            score += 0.15
+            notes.append("recommended parameterized")
+
+        if suggested_fix:
+            has_param = any(k in suggested_fix for k in ["%s", "?", ":param"])
+            no_star = "SELECT *" not in suggested_fix.upper()
+            if has_param and no_star:
+                score += 0.10
+                notes.append("fix correct")
+
+        return min(score, 0.97), " | ".join(notes)
+
+
+TASK_ORDER = ["task_easy", "task_medium", "task_hard", "task_expert"]
 
 TASKS = {
     "task_easy": SyntaxTask(
@@ -180,6 +238,28 @@ TASKS = {
         query='def get_user(username):\n    query = f"SELECT * FROM users WHERE username = \'{username}\'"\n    return db.execute(query)',
         schema_context="Table: users(id INT PK, username VARCHAR(50) UNIQUE, password_hash VARCHAR(255), role VARCHAR(20), last_login TIMESTAMP) — production authentication table",
         task_description="This Python function is used in the login endpoint to fetch users by username. It was written by a junior developer. Review the embedded SQL for security issues before merging to main.",
+        correct_verdict="reject",
+    ),
+    "task_expert": ExpertTask(
+        task_id="task_expert",
+        difficulty="expert",
+        query=(
+            'def get_orders(user_id, status):\n'
+            '    query = f"SELECT * FROM orders WHERE user_id = {user_id}"\n'
+            '    if status:\n'
+            '        query += f" AND status = \'{status}\'"\n'
+            '    return db.execute(query)'
+        ),
+        schema_context=(
+            "Table: orders(id INT PK, user_id INT FK, product_id INT FK, "
+            "amount DECIMAL(10,2), status VARCHAR(20), created_at TIMESTAMP) "
+            "— 50 million rows, user_id has index, no status index"
+        ),
+        task_description=(
+            "This Python function fetches orders by user and optionally filters by status. "
+            "It runs on every page load of the order history page. "
+            "Review for ALL issues: security, performance, and correctness."
+        ),
         correct_verdict="reject",
     ),
 }

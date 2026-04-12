@@ -1,2 +1,0 @@
-To https://github.com/sakthimanoj0706/sql_similator.git
-   0bacf8fe..4cc5367e  main -> main

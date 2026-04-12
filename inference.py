@@ -50,6 +50,25 @@ FALLBACK_RESPONSES = {
             "Must use parameterized queries with placeholders instead"
         ],
         "suggested_fix": "def get_user(username):\n    query = 'SELECT id, username FROM users WHERE username = %s'\n    return db.execute(query, (username,))"
+    },
+    "task_expert": {
+        "verdict": "reject",
+        "issues_found": [
+            "SQL injection via f-string interpolation of user_id directly into query",
+            "SQL injection via f-string interpolation of status parameter",
+            "SELECT star fetches all columns on 50M row production table",
+            "No parameterized queries used for either parameter",
+            "Missing index on status column causing full table scan"
+        ],
+        "suggested_fix": (
+            "def get_orders(user_id, status):\n"
+            "    base = 'SELECT id, user_id, amount, status FROM orders WHERE user_id = %s'\n"
+            "    params = [user_id]\n"
+            "    if status:\n"
+            "        base += ' AND status = %s'\n"
+            "        params.append(status)\n"
+            "    return db.execute(base, params)"
+        )
     }
 }
 

@@ -13,6 +13,7 @@ from tasks.task_definitions import TASKS, TASK_ORDER
 from graders.reward import compute_reward
 
 MAX_STEPS_PER_TASK = 3
+MAX_STEPS_EXPERT = 2
 
 
 class SQLAntigravityEnvironment(Environment):
@@ -68,11 +69,15 @@ class SQLAntigravityEnvironment(Environment):
             suggested_fix=action.suggested_fix,
         )
         self._total_score += score
+        max_steps = MAX_STEPS_EXPERT if task_key == "task_expert" else MAX_STEPS_PER_TASK
         task_done = (
-            self._steps_this_task >= MAX_STEPS_PER_TASK
+            self._steps_this_task >= max_steps
             or score >= 0.90
         )
-        reward = compute_reward(score, self._steps_this_task, MAX_STEPS_PER_TASK, task_done)
+        reward = compute_reward(
+            score, self._steps_this_task,
+            max_steps, task_done
+        )
         if task_done:
             self._task_index += 1
             self._steps_this_task = 0

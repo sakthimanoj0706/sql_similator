@@ -90,12 +90,18 @@ reward = (task_score × 0.75) − (step × 0.05) + efficiency_bonus + completion
 
 Tested with `meta-llama/Llama-3.1-8B-Instruct` via HuggingFace router:
 
-| Task | Reward |
-|------|--------|
-| task_easy (easy) | 0.9 |
-| task_medium (medium) | 0.9 |
-| task_hard (hard) | 0.8 |
-| **Total** | **2.6** |
+| Task | Difficulty | Score |
+|------|-----------|-------|
+| task_easy | Easy | 0.849 |
+| task_medium | Medium | 0.849 |
+| task_hard | Hard | 0.849 |
+| task_expert | Expert | 0.849 |
+| **Total** | | **3.396** |
+
+## Process Supervision
+
+The environment provides rich feedback at every step telling the agent
+exactly what it missed. Example feedback after a partial review:This teaches the agent to improve across attempts within the same task.
 
 ---
 
